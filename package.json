@@ -1,0 +1,28 @@
+{
+  "name": "cryptool",
+  "version": "1.0.0",
+  "description": "Cryptool assignment",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder"
+  },
+  "author": "ngoctin",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^4.1.1",
+    "electron-builder": "^20.39.0"
+  },
+  "build": {
+    "appId": "com.cryptool",
+    "linux": {
+      "target": "AppImage"
+    }
+  },
+  "dependencies": {
+    "bootstrap": "^4.3.1",
+    "jquery": "^3.3.1",
+    "popper.js": "^1.14.7"
+  }
+}
