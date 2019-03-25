@@ -2,6 +2,8 @@
 
 This is a mini encryption/decryption tool for educational purpose (cryptography and network security course)
 
+![alt text](![Preview image](app/images/ninja.png))
+
 ## Getting Started
 
 These instructions will help you to run and build this project
