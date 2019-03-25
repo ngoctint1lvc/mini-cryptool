@@ -77,11 +77,13 @@ $(document).ready(function(){
 
     // rsa algorithm
     ipcRenderer.on('rsa-encryption-reply', (event, result) => {
-
+        console.log(result)
+        $('#rsa-encryption #result').val(result)
     })
 
     ipcRenderer.on('rsa-decryption-reply', (event, result) => {
-
+        console.log(result)
+        $('#rsa-decryption #result').val(result)
     })
 
     ipcRenderer.on('rsa-genkey-reply', (event, result) => {
@@ -93,12 +95,15 @@ $(document).ready(function(){
     $('#rsa-encryption .get-result').click(() => {
         ipcRenderer.send('rsa-encryption', {
             message: $('#rsa-encryption #message').val(),
-            password: $('#rsa-encryption #key').val()
+            publicKey: $('#rsa-encryption #key').val()
         })
     })
 
     $('#rsa-decryption .get-result').click(() => {
-        ipcRenderer.send('rsa-decryption')
+        ipcRenderer.send('rsa-decryption', {
+            message: $('#rsa-decryption #message').val(),
+            privateKey: $('#rsa-decryption #key').val()
+        })
     })
 
     $('#rsa-genkey .get-result').click(() => {

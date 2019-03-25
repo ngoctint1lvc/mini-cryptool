@@ -18,11 +18,15 @@
     "appId": "com.cryptool",
     "linux": {
       "target": "AppImage"
+    },
+    "win": {
+      "target": "nsis"
     }
   },
   "dependencies": {
     "bootstrap": "^4.3.1",
     "jquery": "^3.3.1",
+    "node-rsa": "^1.0.5",
     "popper.js": "^1.14.7"
   }
 }

@@ -1,6 +1,7 @@
 const {app, BrowserWindow, ipcMain, dialog} = require('electron')
 const crypto = require('crypto')
 const fs = require('fs')
+const NodeRSA = require('node-rsa')
 
 function createWindow(){
     let win = new BrowserWindow({
@@ -44,7 +45,7 @@ ipcMain.on('rc4-encryption', (event, args) => {
     console.log('encryption', message, password)
     const key = crypto.createHash('sha256').update(password).digest()
     const iv = Buffer.alloc(96, 0)
-    const cipher = crypto.createCipheriv('rc4', key, iv)
+    const cipher = crypto.createCipheriv('rc4', key, '')
     let encrypted = cipher.update(message, 'utf8', 'hex')
     encrypted += cipher.final('hex')
     event.sender.send('rc4-encryption-reply', encrypted)
@@ -54,7 +55,7 @@ ipcMain.on('rc4-decryption', (event, args) => {
     let {message, password} = args
     console.log('decryption', message, password)
     const key = crypto.createHash('sha256').update(password).disest()
-    const iv = Buffer.alloc(96, 0)
+    const iv = Buffer.alloc(16, 0)
     const decipher = crypto.createDecipheriv('rc4', key, iv)
     let decrypted = decipher.update(message, 'hex', 'utf8')
     decrypted += decipher.final('utf8')
@@ -63,44 +64,26 @@ ipcMain.on('rc4-decryption', (event, args) => {
 
 // rsa
 ipcMain.on('rsa-genkey', (event) => {
-    crypto.generateKeyPair('rsa', {
-        modulusLength: 4096,
-        publicKeyEncoding: {
-            type: 'spki',
-            format: 'pem'
-        },
-        privateKeyEncoding: {
-            type: 'pkcs8',
-            format: 'pem',
-            cipher: 'aes-256-cbc',
-            passphrase: 'secret'
-        }
-    }, (err, publicKey, privateKey) => {
-        if (!err) {
-            event.sender.send('rsa-genkey-reply', {publicKey, privateKey})
-        }
-    })
-
-    //console.log(crypto)
-
-    // const {publicKey, privateKey} = crypto.generateKeyPairSync('rsa', {
-    //     modulusLength: 4096,
-    //     publicKeyEncoding: {
-    //         type: 'spki',
-    //         format: 'pem'
-    //     },
-    //     privateKeyEncoding: {
-    //         type: 'pkcs8',
-    //         format: 'pem',
-    //         cipher: 'aes-256-cbc',
-    //         passphrase: 'secret'
-    //     }
-    // })
-    // console.log(publicKey, privateKey)
+    const key = new NodeRSA({b: 512})
+    const publicKey = key.exportKey('pkcs8-public-pem')
+    const privateKey = key.exportKey('pkcs8-private-pem')
+    event.sender.send('rsa-genkey-reply', {publicKey, privateKey})
 })
 
 ipcMain.on('rsa-encryption', (event, args) => {
+    const {message, publicKey} = args
+    const key = new NodeRSA({b: 512})
+    key.importKey(publicKey, 'pkcs8-public-pem')
+    const encrypted = key.encrypt(message, 'hex')
+    event.sender.send('rsa-encryption-reply', encrypted)
+})
 
+ipcMain.on('rsa-decryption', (event, args) => {
+    const {message, privateKey} = args
+    const key = new NodeRSA({b: 512})
+    key.importKey(privateKey, 'pkcs8-private-pem')
+    const decrypted = key.decrypt(Buffer.from(message, 'hex'), 'utf8')
+    event.sender.send('rsa-decryption-reply', decrypted)
 })
 
 // Handle open, save file dialog
