@@ -2,7 +2,7 @@
 
 This is a mini encryption/decryption tool for educational purpose (cryptography and network security course)
 
-![alt text](![Preview image](app/images/ninja.png))
+![Preview image](app/images/preview.png)
 
 ## Getting Started
 
