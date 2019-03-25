@@ -74,4 +74,45 @@ $(document).ready(function(){
             password: rc4DecryptionPassword.val()
         })
     })
+
+    // rsa algorithm
+    ipcRenderer.on('rsa-encryption-reply', (event, result) => {
+
+    })
+
+    ipcRenderer.on('rsa-decryption-reply', (event, result) => {
+
+    })
+
+    ipcRenderer.on('rsa-genkey-reply', (event, result) => {
+        const {publicKey, privateKey} = result
+        $('#rsa-genkey #public-key').val(publicKey)
+        $('#rsa-genkey #private-key').val(privateKey)
+    })
+
+    $('#rsa-encryption .get-result').click(() => {
+        ipcRenderer.send('rsa-encryption', {
+            message: $('#rsa-encryption #message').val(),
+            password: $('#rsa-encryption #key').val()
+        })
+    })
+
+    $('#rsa-decryption .get-result').click(() => {
+        ipcRenderer.send('rsa-decryption')
+    })
+
+    $('#rsa-genkey .get-result').click(() => {
+        ipcRenderer.send('rsa-genkey')
+    })
+
+    // Handle file open and save
+    $('.file-button.open').click(function(){
+        let result = ipcRenderer.sendSync('open-file')
+        $(this).siblings('textarea').val(result)
+    })
+
+    $('.file-button.save').click(function(){
+        const data = $(this).siblings('textarea').val()
+        let result = ipcRenderer.send('save-file', data)
+    })
 });

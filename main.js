@@ -1,5 +1,6 @@
-const {app, BrowserWindow, ipcMain} = require('electron')
+const {app, BrowserWindow, ipcMain, dialog} = require('electron')
 const crypto = require('crypto')
+const fs = require('fs')
 
 function createWindow(){
     let win = new BrowserWindow({
@@ -58,6 +59,71 @@ ipcMain.on('rc4-decryption', (event, args) => {
     let decrypted = decipher.update(message, 'hex', 'utf8')
     decrypted += decipher.final('utf8')
     event.sender.send('rc4-decryption-reply', decrypted)
+})
+
+// rsa
+ipcMain.on('rsa-genkey', (event) => {
+    crypto.generateKeyPair('rsa', {
+        modulusLength: 4096,
+        publicKeyEncoding: {
+            type: 'spki',
+            format: 'pem'
+        },
+        privateKeyEncoding: {
+            type: 'pkcs8',
+            format: 'pem',
+            cipher: 'aes-256-cbc',
+            passphrase: 'secret'
+        }
+    }, (err, publicKey, privateKey) => {
+        if (!err) {
+            event.sender.send('rsa-genkey-reply', {publicKey, privateKey})
+        }
+    })
+
+    //console.log(crypto)
+
+    // const {publicKey, privateKey} = crypto.generateKeyPairSync('rsa', {
+    //     modulusLength: 4096,
+    //     publicKeyEncoding: {
+    //         type: 'spki',
+    //         format: 'pem'
+    //     },
+    //     privateKeyEncoding: {
+    //         type: 'pkcs8',
+    //         format: 'pem',
+    //         cipher: 'aes-256-cbc',
+    //         passphrase: 'secret'
+    //     }
+    // })
+    // console.log(publicKey, privateKey)
+})
+
+ipcMain.on('rsa-encryption', (event, args) => {
+
+})
+
+// Handle open, save file dialog
+ipcMain.on('open-file', (event, args) => {
+    dialog.showOpenDialog(filenames => {
+        if (filenames === undefined){
+            console.log('No file selected')
+            event.returnValue = null
+        }
+        else {
+            event.returnValue = fs.readFileSync(filenames[0])
+        }
+    })
+})
+
+ipcMain.on('save-file', (event, data) => {
+    dialog.showSaveDialog(filename => {
+        if (filename){
+            fs.writeFile(filename, data, (err) => {
+                console.log(data)
+            })
+        }
+    })
 })
 
 app.on('ready', createWindow)
