@@ -161,15 +161,9 @@ ipcMain.on('save-file', (event, data) => {
     }, filename => {
         if (filename){
             console.log(data)
-<<<<<<< HEAD
-            fs.writeFile(filename, data, (err) => {
-                //console.log(data)
-                event.sender.send('save-file-reply', 'Complete')
-=======
             console.log(Buffer.from(data, 'base64').toString('binary'))
             fs.writeFile(filename, Buffer.from(data, 'base64'), (err) => {
                 //console.log(Buffer.from(data, 'base64').toString('binary'))
->>>>>>> test
             })
         }
     })
