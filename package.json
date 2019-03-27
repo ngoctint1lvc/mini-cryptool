@@ -24,6 +24,7 @@
     }
   },
   "dependencies": {
+    "arc4": "^3.4.0",
     "bootstrap": "^4.3.1",
     "jquery": "^3.3.1",
     "node-rsa": "^1.0.5",

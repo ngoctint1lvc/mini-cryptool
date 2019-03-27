@@ -15,12 +15,12 @@ $(document).ready(function(){
     ipcRenderer.on('aes-encryption-reply', (event, args) => {
         // console.log(args)
         aesEncryptionResult.val(args)
-        aesEncryptionResult.attr('data-base64', args)
+        aesEncryptionResult.attr('data-base64', Buffer.from(args, 'binary').toString('base64'))
     })
 
     ipcRenderer.on('aes-decryption-reply', (event, args) => {
         // console.log(args)
-        aesDecryptionResult.val(Buffer.from(args, 'base64').toString('utf8'))
+        aesDecryptionResult.val(Buffer.from(args, 'base64').toString('binary'))
         aesDecryptionResult.attr('data-base64', args)
     })
 
@@ -53,13 +53,13 @@ $(document).ready(function(){
 
     ipcRenderer.on('rc4-encryption-reply', (event, args) => {
         // console.log(args)
-        rc4EncryptionResult.val(Buffer.from(args, 'base64').toString('utf8'))
-        rc4EncryptionResult.attr('data-base64', args)
+        rc4EncryptionResult.val(args)
+        rc4EncryptionResult.attr('data-base64', Buffer.from(args, 'binary').toString('base64'))
     })
 
     ipcRenderer.on('rc4-decryption-reply', (event, args) => {
         // console.log(args)
-        rc4DecryptionResult.val(Buffer.from(args, 'base64').toString('utf8'))
+        rc4DecryptionResult.val(Buffer.from(args, 'base64').toString('binary'))
         rc4DecryptionResult.attr('data-base64', args)
     })
 
@@ -81,13 +81,13 @@ $(document).ready(function(){
 
     // rsa algorithm
     ipcRenderer.on('rsa-encryption-reply', (event, result) => {
-        $('#rsa-encryption #result').val(Buffer.from(result, 'base64').toString('utf8'))
-        $('#rsa-encryption #result').attr('data-base64', result)
+        $('#rsa-encryption #result').val(result)
+        $('#rsa-encryption #result').attr('data-base64', Buffer.from(result, 'binary').toString('base64'))
     })
 
     ipcRenderer.on('rsa-decryption-reply', (event, result) => {
         // console.log(result)
-        $('#rsa-decryption #result').val(Buffer.from(result, 'base64').toString('utf8'))
+        $('#rsa-decryption #result').val(Buffer.from(result, 'base64').toString('binary'))
         $('#rsa-decryption #result').attr('data-base64', result)
     })
 
@@ -95,8 +95,8 @@ $(document).ready(function(){
         const {publicKey, privateKey} = result
         $('#rsa-genkey #public-key').val(publicKey)
         $('#rsa-genkey #private-key').val(privateKey)
-        $('#rsa-genkey #public-key').attr('data-base64', Buffer.from(publicKey, 'utf8').toString('base64'))
-        $('#rsa-genkey #private-key').attr('data-base64', Buffer.from(privateKey, 'utf8').toString('base64'))
+        $('#rsa-genkey #public-key').attr('data-base64', Buffer.from(publicKey, 'binary').toString('base64'))
+        $('#rsa-genkey #private-key').attr('data-base64', Buffer.from(privateKey, 'binary').toString('base64'))
     })
 
     $('#rsa-encryption .get-result').click(() => {
@@ -121,7 +121,7 @@ $(document).ready(function(){
     $('#message,#result').change(function(){
         console.log('message or result change')
         console.log($(this).val())
-        $(this).attr('data-base64', Buffer.from($(this).val(), 'utf8').toString('base64'))
+        $(this).attr('data-base64', Buffer.from($(this).val(), 'binary').toString('base64'))
     })
 
     // Handle file open and save
@@ -131,7 +131,7 @@ $(document).ready(function(){
         if (result){
             console.log(result)
             currentTextarea.attr('data-base64', result)
-            currentTextarea.val(Buffer.from(result, 'base64').toString('utf8'))
+            currentTextarea.val(Buffer.from(result, 'base64').toString('binary'))
         }
         loading.removeClass('show')
     })
@@ -154,8 +154,7 @@ $(document).ready(function(){
     $('.file-button.save').click(function(){
         try {
             //const data = $(this).siblings('textarea').val()
-            let data = $(this).siblings('textarea').attr('data-base64') | ''
-            data = Buffer.from(data, 'base64').toString('utf8')
+            let data = $(this).siblings('textarea').attr('data-base64')
             console.log(data)
             ipcRenderer.send('save-file', data)
         }
