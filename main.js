@@ -2,6 +2,7 @@ const {app, BrowserWindow, ipcMain, dialog} = require('electron')
 const crypto = require('crypto')
 const fs = require('fs')
 const NodeRSA = require('node-rsa')
+const rc4 = require('arc4')
 
 function createWindow(){
     let win = new BrowserWindow({
@@ -55,12 +56,9 @@ ipcMain.on('aes-decryption', (event, args) => {
 ipcMain.on('rc4-encryption', (event, args) => {
     try {
         const {message, password} = args
+        let cipher = rc4('arc4', password)
         //console.log('encryption', message, password)
-        const key = crypto.createHash('sha256').update(password).digest()
-        // const iv = Buffer.alloc(16, 0)
-        const cipher = crypto.createCipheriv('rc4', key)
-        let encrypted = cipher.update(message, 'utf8', 'hex')
-        encrypted += cipher.final('hex')
+        let encrypted = cipher.encodeString(message)
         event.sender.send('rc4-encryption-reply', encrypted)
     }
     catch(err){
@@ -73,11 +71,8 @@ ipcMain.on('rc4-decryption', (event, args) => {
     try {
         let {message, password} = args
         //console.log('decryption', message, password)
-        const key = crypto.createHash('sha256').update(password).disest()
-        const iv = Buffer.alloc(16, 0)
-        const decipher = crypto.createDecipheriv('rc4', key, iv)
-        let decrypted = decipher.update(message, 'hex', 'utf8')
-        decrypted += decipher.final('utf8')
+        let cipher = rc4('arc4', password)
+        let decrypted = cipher.decodeString(message)
         event.sender.send('rc4-decryption-reply', decrypted)
     }
     catch(err){
@@ -157,8 +152,10 @@ ipcMain.on('save-file', (event, data) => {
         ]
     }, filename => {
         if (filename){
+            console.log(data)
             fs.writeFile(filename, data, (err) => {
                 //console.log(data)
+                event.sender.send('save-file-reply', 'Complete')
             })
         }
     })

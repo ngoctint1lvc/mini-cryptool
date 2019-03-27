@@ -141,8 +141,8 @@ $(document).ready(function(){
     $('.file-button.save').click(function(){
         try {
             const data = $(this).siblings('textarea').val()
-            loading.addClass('show')
-            let result = ipcRenderer.send('save-file', data)
+            ipcRenderer.send('save-file', data)
+            //loading.addClass('show')
         }
         catch(err) {
             loading.removeClass('show')
