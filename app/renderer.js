@@ -1,4 +1,5 @@
 const {ipcRenderer} = require('electron')
+const {dialog} = require('electron').remote
 
 $(document).ready(function(){
     // aes algorithm
@@ -110,14 +111,26 @@ $(document).ready(function(){
         ipcRenderer.send('rsa-genkey')
     })
 
+
     // Handle file open and save
+    const loading = $('.loading')
+    let currentTextarea
+    ipcRenderer.on('open-file-reply', function(event, result) {
+        if (result){
+            currentTextarea.val(result)
+        }
+        loading.removeClass('show')
+    })
+
     $('.file-button.open').click(function(){
-        let result = ipcRenderer.sendSync('open-file')
-        $(this).siblings('textarea').val(result)
+        console.log($(this).get(0))
+        currentTextarea = $(this).siblings('textarea')
+        ipcRenderer.send('open-file')
+        loading.addClass('show')
     })
 
     $('.file-button.save').click(function(){
-        const data = $(this).siblings('textarea').val()
+        const data = $(this).val()
         let result = ipcRenderer.send('save-file', data)
     })
 });
