@@ -96,6 +96,10 @@ a.nav-link {
     margin: 10px auto;
 }
 
+.form-group input[type=file] {
+    
+}
+
 /* Scroll bar */
 #content::-webkit-scrollbar {
     width: 13px;
@@ -120,10 +124,6 @@ a.nav-link {
     text-align: center;
     line-height: 100vh;
     background: #1a1a1a5a;
-}
-
-.loading > img {
-    
 }
 
 .loading.show {

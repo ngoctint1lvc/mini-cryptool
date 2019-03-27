@@ -117,20 +117,35 @@ $(document).ready(function(){
     let currentTextarea
     ipcRenderer.on('open-file-reply', function(event, result) {
         if (result){
+            console.log(result)
             currentTextarea.val(result)
         }
         loading.removeClass('show')
     })
 
     $('.file-button.open').click(function(){
-        console.log($(this).get(0))
-        currentTextarea = $(this).siblings('textarea')
-        ipcRenderer.send('open-file')
-        loading.addClass('show')
+        try {
+            currentTextarea = $(this).siblings('textarea')
+            ipcRenderer.send('open-file')
+            loading.addClass('show')
+        }
+        catch(err) {
+            loading.removeClass('show')
+        }
+    })
+
+    ipcRenderer.on('save-file-reply', (event, result) => {
+        loading.removeClass('show')
     })
 
     $('.file-button.save').click(function(){
-        const data = $(this).val()
-        let result = ipcRenderer.send('save-file', data)
+        try {
+            const data = $(this).siblings('textarea').val()
+            loading.addClass('show')
+            let result = ipcRenderer.send('save-file', data)
+        }
+        catch(err) {
+            loading.removeClass('show')
+        }
     })
 });
