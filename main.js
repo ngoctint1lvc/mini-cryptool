@@ -24,8 +24,8 @@ ipcMain.on('aes-encryption', (event, args) => {
         const key = crypto.scryptSync(password, 'salt', 32)
         const iv = Buffer.alloc(16, 0)
         const cipher = crypto.createCipheriv('aes-256-cbc', key, iv)
-        let encrypted = cipher.update(message, 'utf8', 'hex')
-        encrypted += cipher.final('hex')
+        let encrypted = cipher.update(message, 'base64', 'base64')
+        encrypted += cipher.final('base64')
         event.sender.send('aes-encryption-reply', encrypted)
     }
     catch(err){
@@ -41,8 +41,8 @@ ipcMain.on('aes-decryption', (event, args) => {
         const key = crypto.scryptSync(password, 'salt', 32)
         const iv = Buffer.alloc(16, 0)
         const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv)
-        let decrypted = decipher.update(message, 'hex', 'utf8')
-        decrypted += decipher.final('utf8')
+        let decrypted = decipher.update(message, 'base64', 'base64')
+        decrypted += decipher.final('base64')
         event.sender.send('aes-decryption-reply', decrypted)
     }
     catch(err){
@@ -55,12 +55,12 @@ ipcMain.on('aes-decryption', (event, args) => {
 ipcMain.on('rc4-encryption', (event, args) => {
     try {
         const {message, password} = args
-        //console.log('encryption', message, password)
+        console.log('rc4 encryption', message, password)
         const key = crypto.createHash('sha256').update(password).digest()
         // const iv = Buffer.alloc(16, 0)
         const cipher = crypto.createCipheriv('rc4', key)
-        let encrypted = cipher.update(message, 'utf8', 'hex')
-        encrypted += cipher.final('hex')
+        let encrypted = cipher.update(message, 'base64', 'base64')
+        encrypted += cipher.final('base64')
         event.sender.send('rc4-encryption-reply', encrypted)
     }
     catch(err){
@@ -76,7 +76,7 @@ ipcMain.on('rc4-decryption', (event, args) => {
         const key = crypto.createHash('sha256').update(password).disest()
         const iv = Buffer.alloc(16, 0)
         const decipher = crypto.createDecipheriv('rc4', key, iv)
-        let decrypted = decipher.update(message, 'hex', 'utf8')
+        let decrypted = decipher.update(message, 'base64', 'utf8')
         decrypted += decipher.final('utf8')
         event.sender.send('rc4-decryption-reply', decrypted)
     }
@@ -97,6 +97,7 @@ ipcMain.on('rsa-genkey', (event) => {
 ipcMain.on('rsa-encryption', (event, args) => {
     try {
         const {message, publicKey} = args
+        console.log('rsa encryption: ', message, publicKey)
         const key = new NodeRSA({b: 512})
         key.importKey(publicKey, 'pkcs8-public-pem')
         const encrypted = key.encrypt(message, 'hex')
@@ -111,6 +112,7 @@ ipcMain.on('rsa-encryption', (event, args) => {
 ipcMain.on('rsa-decryption', (event, args) => {
     try {
         const {message, privateKey} = args
+        console.log('rsa decryption: ', message, privateKey)
         const key = new NodeRSA({b: 512})
         key.importKey(privateKey, 'pkcs8-private-pem')
         const decrypted = key.decrypt(Buffer.from(message, 'hex'), 'utf8')
@@ -140,8 +142,8 @@ ipcMain.on('open-file', (event, args) => {
                     event.sender.send('open-file-reply', null)
                 }
                 else{
-                    console.log(data.toString('utf8'))
-                    event.sender.send('open-file-reply', data.toString('utf8'))
+                    console.log(data.toString('base64'))
+                    event.sender.send('open-file-reply', data.toString('base64'))
                 }
             })
         }
@@ -158,7 +160,7 @@ ipcMain.on('save-file', (event, data) => {
     }, filename => {
         if (filename){
             fs.writeFile(filename, data, (err) => {
-                //console.log(data)
+                console.log(data)
             })
         }
     })

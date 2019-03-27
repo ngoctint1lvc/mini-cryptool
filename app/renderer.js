@@ -1,5 +1,4 @@
 const {ipcRenderer} = require('electron')
-const {dialog} = require('electron').remote
 
 $(document).ready(function(){
     // aes algorithm
@@ -14,19 +13,21 @@ $(document).ready(function(){
     const aesDecryptionResult = $('#aes-decryption #result')
 
     ipcRenderer.on('aes-encryption-reply', (event, args) => {
-        console.log(args)
+        // console.log(args)
         aesEncryptionResult.val(args)
+        aesEncryptionResult.attr('data-base64', args)
     })
 
     ipcRenderer.on('aes-decryption-reply', (event, args) => {
-        console.log(args)
-        aesDecryptionResult.val(args)
+        // console.log(args)
+        aesDecryptionResult.val(Buffer.from(args, 'base64').toString('utf8'))
+        aesDecryptionResult.attr('data-base64', args)
     })
 
     aesEncryptionButton.click(function(){
-        console.log('aes encryption')
+        // console.log('aes encryption')
         ipcRenderer.send('aes-encryption', {
-            message: aesEncryptionMessage.val(), 
+            message: aesEncryptionMessage.attr('data-base64'), 
             password: aesEncryptionPassword.val()
         })
     })
@@ -34,7 +35,7 @@ $(document).ready(function(){
     aesDecryptionButton.click(function(){
         console.log('aes decryption')
         ipcRenderer.send('aes-decryption', {
-            message: aesDecryptionMessage.val(), 
+            message: aesDecryptionMessage.attr('data-base64'),
             password: aesDecryptionPassword.val()
         })
     })
@@ -51,19 +52,21 @@ $(document).ready(function(){
     const rc4DecryptionResult = $('#rc4-decryption #result')
 
     ipcRenderer.on('rc4-encryption-reply', (event, args) => {
-        console.log(args)
-        rc4EncryptionResult.val(args)
+        // console.log(args)
+        rc4EncryptionResult.val(Buffer.from(args, 'base64').toString('utf8'))
+        rc4EncryptionResult.attr('data-base64', args)
     })
 
     ipcRenderer.on('rc4-decryption-reply', (event, args) => {
-        console.log(args)
-        rc4DecryptionResult.val(args)
+        // console.log(args)
+        rc4DecryptionResult.val(Buffer.from(args, 'base64').toString('utf8'))
+        rc4DecryptionResult.attr('data-base64', args)
     })
 
     rc4EncryptionButton.click(function(){
         console.log('rc4 encryption')
         ipcRenderer.send('rc4-encryption', {
-            message: rc4EncryptionMessage.val(), 
+            message: rc4EncryptionMessage.attr('data-base64'), 
             password: rc4EncryptionPassword.val()
         })
     })
@@ -71,38 +74,41 @@ $(document).ready(function(){
     rc4DecryptionButton.click(function(){
         console.log('rc4 decryption')
         ipcRenderer.send('rc4-decryption', {
-            message: rc4DecryptionMessage.val(), 
+            message: rc4DecryptionMessage.attr('data-base64'), 
             password: rc4DecryptionPassword.val()
         })
     })
 
     // rsa algorithm
     ipcRenderer.on('rsa-encryption-reply', (event, result) => {
-        console.log(result)
-        $('#rsa-encryption #result').val(result)
+        $('#rsa-encryption #result').val(Buffer.from(result, 'base64').toString('utf8'))
+        $('#rsa-encryption #result').attr('data-base64', result)
     })
 
     ipcRenderer.on('rsa-decryption-reply', (event, result) => {
-        console.log(result)
-        $('#rsa-decryption #result').val(result)
+        // console.log(result)
+        $('#rsa-decryption #result').val(Buffer.from(result, 'base64').toString('utf8'))
+        $('#rsa-decryption #result').attr('data-base64', result)
     })
 
     ipcRenderer.on('rsa-genkey-reply', (event, result) => {
         const {publicKey, privateKey} = result
         $('#rsa-genkey #public-key').val(publicKey)
         $('#rsa-genkey #private-key').val(privateKey)
+        $('#rsa-genkey #public-key').attr('data-base64', Buffer.from(publicKey, 'utf8').toString('base64'))
+        $('#rsa-genkey #private-key').attr('data-base64', Buffer.from(privateKey, 'utf8').toString('base64'))
     })
 
     $('#rsa-encryption .get-result').click(() => {
         ipcRenderer.send('rsa-encryption', {
-            message: $('#rsa-encryption #message').val(),
+            message: $('#rsa-encryption #message').attr('data-base64'),
             publicKey: $('#rsa-encryption #key').val()
         })
     })
 
     $('#rsa-decryption .get-result').click(() => {
         ipcRenderer.send('rsa-decryption', {
-            message: $('#rsa-decryption #message').val(),
+            message: $('#rsa-decryption #message').attr('data-base64'),
             privateKey: $('#rsa-decryption #key').val()
         })
     })
@@ -111,6 +117,12 @@ $(document).ready(function(){
         ipcRenderer.send('rsa-genkey')
     })
 
+    // Update message and result textbox
+    $('#message,#result').change(function(){
+        console.log('message or result change')
+        console.log($(this).val())
+        $(this).attr('data-base64', Buffer.from($(this).val(), 'utf8').toString('base64'))
+    })
 
     // Handle file open and save
     const loading = $('.loading')
@@ -118,7 +130,8 @@ $(document).ready(function(){
     ipcRenderer.on('open-file-reply', function(event, result) {
         if (result){
             console.log(result)
-            currentTextarea.val(result)
+            currentTextarea.attr('data-base64', result)
+            currentTextarea.val(Buffer.from(result, 'base64').toString('utf8'))
         }
         loading.removeClass('show')
     })
@@ -140,9 +153,11 @@ $(document).ready(function(){
 
     $('.file-button.save').click(function(){
         try {
-            const data = $(this).siblings('textarea').val()
-            loading.addClass('show')
-            let result = ipcRenderer.send('save-file', data)
+            //const data = $(this).siblings('textarea').val()
+            let data = $(this).siblings('textarea').attr('data-base64') | ''
+            data = Buffer.from(data, 'base64').toString('utf8')
+            console.log(data)
+            ipcRenderer.send('save-file', data)
         }
         catch(err) {
             loading.removeClass('show')
